@@ -4,12 +4,12 @@ namespace Pesto;
 
 
 class Pesto {
-	public static function parse(RenderObject $ro) {
+	public static function render(RenderObject $ro) {
 		$renderedContent = $ro->rawContent;
 
 		//Render components
 		foreach ($ro->components as $component) {
-			$componentContent = ('\Components\\' . $component)::render();
+			$componentContent = ('\Components\\' . $component)::component();
 
 			//Find body
 			preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $renderedContent, $contents);

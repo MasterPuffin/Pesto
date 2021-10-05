@@ -9,4 +9,4 @@ header('Content-Type:text/plain');
 
 $ro = \Views\Site::content();
 
-Pesto::parse($ro);
+Pesto::render($ro);

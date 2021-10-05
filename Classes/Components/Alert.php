@@ -4,7 +4,7 @@ namespace Components;
 
 class Alert
 {
-    public static function render(): string
+    public static function component(): string
     {
 return <<<EOL
 <div class="alert">
