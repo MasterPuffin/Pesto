@@ -35,13 +35,13 @@ class Pesto {
 
         foreach ($ro->extends as $extend) {
             //Render extension
-            $extendRo = ('\Views\\' . $extend):: {$ro->function}();
+            $extendRo = ('\Views\\' . $extend)::{$ro->function}();
             $parsedExtendRo = self::parse($extendRo);
 
             preg_match_all('/{{\s*(.*)\s*}}/mU', $parsedExtendRo, $matches, 1);
 
             //Always render content first
-            if (in_array("content",$matches[1])) {
+            if (in_array("content", $matches[1])) {
                 $parsedContent = preg_replace('/{{\s*content\s*}}/mU', $parsedContent, $parsedExtendRo, 1);
             }
 
@@ -51,7 +51,7 @@ class Pesto {
                     $matchedElement = ('\\' . $ro->class)::{trim($match)}();
                     $parsedMatchedElement = self::parse($matchedElement);
 
-                    $parsedContent = preg_replace('/{{\s*'.$match.'\s*}}/mU', $parsedMatchedElement, $parsedContent, 1);
+                    $parsedContent = preg_replace('/{{\s*' . $match . '\s*}}/mU', $parsedMatchedElement, $parsedContent, 1);
                 }
             }
         }
