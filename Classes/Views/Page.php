@@ -5,10 +5,8 @@ namespace Views;
 use Pesto\RenderObject;
 
 class Page {
-    public static array $components = ["Alert"];
-    public static array $extends = [];
-
     public static function content(): RenderObject {
+        #Components = [Alert]
         $content =
             <<<EOL
 <!DOCTYPE html>
@@ -23,6 +21,6 @@ class Page {
 </body>
 </html>
 EOL;
-        return new RenderObject(self::class, self::$components, self::$extends, $content);
+        return new RenderObject(self::class, __FUNCTION__, ["Alert"], [], $content);
     }
 }
