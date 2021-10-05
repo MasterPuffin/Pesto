@@ -6,7 +6,7 @@ use Pesto\RenderObject;
 
 class Site {
     public static function pageTitle(): RenderObject {
-        return new RenderObject(self::class, __FUNCTION__, [], [], "This Site Title");
+        return new RenderObject("This Site Title");
     }
 
     public static function content(): RenderObject {
@@ -22,6 +22,6 @@ class Site {
 	</div>
 </div>
 EOL;
-        return new RenderObject(self::class, __FUNCTION__, ["Alert"], ["Page"], $content);
+        return new RenderObject($content, ["Alert"], ["Page"]);
     }
 }

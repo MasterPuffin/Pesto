@@ -60,6 +60,5 @@ class Pesto {
 
     public static function render(RenderObject $ro) {
         echo self::parse($ro);
-
     }
 }

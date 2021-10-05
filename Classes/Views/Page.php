@@ -21,6 +21,6 @@ class Page {
 </body>
 </html>
 EOL;
-        return new RenderObject(self::class, __FUNCTION__, ["Alert"], [], $content);
+        return new RenderObject($content, ["Alert"], []);
     }
 }
