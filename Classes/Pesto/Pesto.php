@@ -48,7 +48,7 @@ class Pesto {
             foreach ($matches[1] as $match) {
                 //Content has already been rendered
                 if ($match != "content") {
-                    $matchedElement = ('\\' . $ro->class)::$match();
+                    $matchedElement = ('\\' . $ro->class)::{trim($match)}();
                     $parsedMatchedElement = self::parse($matchedElement);
 
                     $parsedContent = preg_replace('/{{\s*'.$match.'\s*}}/mU', $parsedMatchedElement, $parsedContent, 1);

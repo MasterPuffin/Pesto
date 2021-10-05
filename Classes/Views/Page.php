@@ -13,7 +13,7 @@ class Page {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{pageTitle}}</title>
+    <title>{{ptitle}}</title>
 </head>
 <body>
 <Alert @title="Alert in Page" @attribute="Alert in Page Attribute">This is an Alert inside the extended Page</Alert>
