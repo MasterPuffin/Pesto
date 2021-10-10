@@ -2,63 +2,70 @@
 
 namespace Pesto;
 
-
 class Pesto {
-    public static function parse(RenderObject $ro) {
-        $parsedContent = $ro->rawContent;
+	public static function parse(RenderObject $ro) {
+		$parsedContent = $ro->rawContent;
 
-        //Render components
-        foreach ($ro->components as $component) {
-            $componentContent = ('\Components\\' . $component)::component();
+		//Parse the components
+		foreach ($ro->components as $component) {
+			//Find the component occurrences
+			preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $parsedContent, $componentOccurrences);
 
-            //Find body
-            preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $parsedContent, $contents);
+			foreach ($componentOccurrences[0] as $co) {
+				//Get the code for the component
+				$componentContent = ('\Components\\' . $component)::component();
 
-            //Find component attributes
-            preg_match_all('/@(.*)="(.*)"/mU', $parsedContent, $attributes);
+				//Find component attributes
+				preg_match_all('/@(.*)="(.*)"/mU', $co, $attributes);
 
-            //Replace Tags with content
-            $parsedContent = preg_replace('/<' . $component . '(.*)>(.*)<\/' . $component . '>/m', $componentContent, $parsedContent);
+				//Find body
+				preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $co, $contents);
 
-            $count = count($attributes[1]);
-            for ($i = 0; $i < $count; $i++) {
-                $parsedContent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/mU', $attributes[2][$i], $parsedContent, 1);
-                unset($attributes[1][$i]);
-                unset($attributes[2][$i]);
-            }
+				//Push the content to the attributes, so we only have to loop trough one array
+				$attributes[1][] = "content";
+				$attributes[2][] = $contents[1][0];
 
-            //Now render to content of the component
-            foreach ($contents[1] as $content) {
-                $parsedContent = preg_replace('/{{\s*content\s*}}/mU', $content, $parsedContent, 1);
-            }
-        }
+				$parsedComponent = $componentContent;
 
-        foreach ($ro->extends as $extend) {
-            //Render extension
-            $extendRo = ('\Views\\' . $extend)::{$ro->function}();
-            $parsedExtendRo = self::parse($extendRo);
+				//Replace each attribute with its content
+				for ($i = 0; $i < count($attributes); $i++) {
+					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', $attributes[2][$i], $parsedComponent);
+				}
 
-            preg_match_all('/{{\s*(.*)\s*}}/mU', $parsedExtendRo, $matches, 1);
+				//Replace component in original RenderObject
+				$parsedContent = preg_replace('/<' . $component . '.*>(.*)<\/' . $component . '>/', $parsedComponent, $parsedContent);
+			}
+		}
 
-            //Always render content first
-            if (in_array("content", $matches[1])) {
-                $parsedContent = preg_replace('/{{\s*content\s*}}/mU', $parsedContent, $parsedExtendRo, 1);
-            }
 
-            foreach ($matches[1] as $match) {
-                //Content has already been rendered
-                if ($match != "content") {
-                    $matchedElement = ('\\' . $ro->class)::{trim($match)}();
-                    $parsedMatchedElement = self::parse($matchedElement);
+		//Render extensions
+		foreach ($ro->extends as $extend) {
+			//Get the extension
+			$extendRo = ('\Views\\' . $extend)::{$ro->function}();
+			$parsedExtendRo = self::parse($extendRo);
 
-                    $parsedContent = preg_replace('/{{\s*' . $match . '\s*}}/mU', $parsedMatchedElement, $parsedContent, 1);
-                }
-            }
-        }
-        return $parsedContent;
-    }
+			preg_match_all('/{{\s*(.*)\s*}}/mU', $parsedExtendRo, $matches, 1);
 
-    public static function render(RenderObject $ro) {
-        echo self::parse($ro);
-    }
+			//Always render content first
+			if (in_array("content", $matches[1])) {
+				$parsedContent = preg_replace('/{{\s*content\s*}}/mU', $parsedContent, $parsedExtendRo, 1);
+			}
+
+			foreach ($matches[1] as $match) {
+				//Content has already been rendered
+				if ($match != "content") {
+					$matchedElement = ('\\' . $ro->class)::{trim($match)}();
+					$parsedMatchedElement = self::parse($matchedElement);
+
+					$parsedContent = preg_replace('/{{\s*' . $match . '\s*}}/mU', $parsedMatchedElement, $parsedContent, 1);
+				}
+			}
+		}
+
+		return $parsedContent;
+	}
+
+	public static function render(RenderObject $ro) {
+		echo self::parse($ro);
+	}
 }
