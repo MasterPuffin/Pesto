@@ -77,13 +77,14 @@ class Pesto {
 
 	public function render($ro) {
 		switch (get_class($ro)) {
-			case "Pesto\RenderObject":
+			case __NAMESPACE__ . "\RenderObject":
 				echo self::parse($ro);
 				break;
-			case "Pesto\ScriptObject":
+			case __NAMESPACE__ . "\ScriptObject":
 				//Do nothing as code has been executed
 				break;
 			default:
+				echo "error";
 				//Throw error
 				error_log("Pesto: Tried to render object with unknown class: " . get_class($ro));
 				break;
