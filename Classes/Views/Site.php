@@ -3,6 +3,7 @@
 namespace Views;
 
 use Pesto\RenderObject;
+use Pesto\ScriptObject;
 
 class Site {
     public static function title(): RenderObject {
@@ -23,5 +24,11 @@ class Site {
 </div>
 EOL;
         return new RenderObject($content, ["Alert"], ["Page"]);
+    }
+
+    public static function action(): ScriptObject {
+    	echo "hello world";
+
+    	return new ScriptObject();
     }
 }

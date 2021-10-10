@@ -7,6 +7,8 @@ spl_autoload_register(function ($class_name) {
 
 header('Content-Type:text/plain');
 
-$ro = \Views\Site::content();
+$Pesto = new Pesto("");
 
-Pesto::render($ro);
+$ro = \Views\Site::action();
+
+$Pesto->render($ro);

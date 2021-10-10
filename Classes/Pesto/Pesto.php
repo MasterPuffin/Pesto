@@ -3,7 +3,13 @@
 namespace Pesto;
 
 class Pesto {
-	public static function parse(RenderObject $ro) {
+	private string $classRoot = "";
+
+	public function __construct(string $classRoot = "") {
+		$this->classRoot = $classRoot;
+	}
+
+	private function parse(RenderObject $ro) {
 		$parsedContent = $ro->rawContent;
 
 		//Parse the components
@@ -13,7 +19,7 @@ class Pesto {
 
 			foreach ($componentOccurrences[0] as $co) {
 				//Get the code for the component
-				$componentContent = ('\Components\\' . $component)::component();
+				$componentContent = ($this->classRoot . '\Components\\' . $component)::component();
 
 				//Find component attributes
 				preg_match_all('/@(.*)="(.*)"/mU', $co, $attributes);
@@ -41,7 +47,7 @@ class Pesto {
 		//Render extensions
 		foreach ($ro->extends as $extend) {
 			//Get the extension
-			$extendRo = ('\Views\\' . $extend)::{$ro->function}();
+			$extendRo = ($this->classRoot . '\Views\\' . $extend)::{$ro->function}();
 			$parsedExtendRo = self::parse($extendRo);
 
 			preg_match_all('/{{\s*(.*)\s*}}/mU', $parsedExtendRo, $matches, 1);
@@ -65,7 +71,19 @@ class Pesto {
 		return $parsedContent;
 	}
 
-	public static function render(RenderObject $ro) {
-		echo self::parse($ro);
+	public function render($ro) {
+		switch (get_class($ro)) {
+			case "Pesto\RenderObject":
+				echo self::parse($ro);
+				break;
+			case "Pesto\ScriptObject":
+				//Do nothing as code has been executed
+				break;
+			default:
+				//Throw error
+				error_log("Pesto: Tried to render object with unknown class: " . get_class($ro));
+				break;
+		}
+
 	}
 }
