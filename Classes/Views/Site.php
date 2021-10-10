@@ -2,8 +2,9 @@
 
 namespace Views;
 
-use Pesto\RenderObject;
-use Pesto\ScriptObject;
+
+use MasterPuffin\Pesto\RenderObject;
+use MasterPuffin\Pesto\ScriptObject;
 
 class Site {
     public static function title(): RenderObject {

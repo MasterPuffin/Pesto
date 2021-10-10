@@ -1,6 +1,6 @@
 <?php
 
-namespace Pesto;
+namespace MasterPuffin\Pesto;
 
 class Pesto {
 	private string $classRoot = "";

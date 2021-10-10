@@ -2,7 +2,7 @@
 
 namespace Views;
 
-use Pesto\RenderObject;
+use MasterPuffin\Pesto\RenderObject;
 
 class Page {
     public static function content(): RenderObject {
