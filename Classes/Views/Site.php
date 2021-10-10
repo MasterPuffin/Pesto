@@ -5,7 +5,7 @@ namespace Views;
 use Pesto\RenderObject;
 
 class Site {
-    public static function ptitle(): RenderObject {
+    public static function title(): RenderObject {
         return new RenderObject("This Site Title");
     }
 
