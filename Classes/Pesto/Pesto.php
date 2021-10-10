@@ -4,9 +4,13 @@ namespace Pesto;
 
 class Pesto {
 	private string $classRoot = "";
+	private string $viewsFolder = "";
+	private string $componentsFolder = "";
 
-	public function __construct(string $classRoot = "") {
+	public function __construct(string $classRoot = "", $viewsFolder = "Views", $componentsFolder = "Components") {
 		$this->classRoot = $classRoot;
+		$this->viewsFolder = $viewsFolder;
+		$this->componentsFolder = $componentsFolder;
 	}
 
 	private function parse(RenderObject $ro) {
@@ -19,7 +23,7 @@ class Pesto {
 
 			foreach ($componentOccurrences[0] as $co) {
 				//Get the code for the component
-				$componentContent = ($this->classRoot . '\Components\\' . $component)::component();
+				$componentContent = ($this->classRoot . '\\' . $this->componentsFolder . '\\' . $component)::component();
 
 				//Find component attributes
 				preg_match_all('/@(.*)="(.*)"/mU', $co, $attributes);
@@ -47,7 +51,7 @@ class Pesto {
 		//Render extensions
 		foreach ($ro->extends as $extend) {
 			//Get the extension
-			$extendRo = ($this->classRoot . '\Views\\' . $extend)::{$ro->function}();
+			$extendRo = ($this->classRoot . '\\' . $this->viewsFolder . '\\' . $extend)::{$ro->function}();
 			$parsedExtendRo = self::parse($extendRo);
 
 			preg_match_all('/{{\s*(.*)\s*}}/mU', $parsedExtendRo, $matches, 1);
