@@ -12,7 +12,7 @@ header('Content-Type:text/plain');
 
 
 $p = new Pesto(__DIR__ . "/");
-$p->enableCaching=false;
+$p->enableCaching = false;
 
 $r = $p->render('1');
-print_r($r);
+echo $r;
