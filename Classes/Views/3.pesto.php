@@ -1,2 +1,2 @@
-<div>3</div>
+<div>C</div>
 #Block(content2)#Endblock

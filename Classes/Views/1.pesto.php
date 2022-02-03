@@ -1,4 +1,4 @@
 #Extends = [2]
 #Block(content1)
-<div>1</div>
+<div>A</div>
 #Endblock

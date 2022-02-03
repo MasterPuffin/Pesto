@@ -1,7 +1,6 @@
 <?php
 
 use MasterPuffin\Pesto\Pesto;
-use MasterPuffin\Pesto\Pesto2;
 
 require_once "vendors/MasterPuffin/autoload.php";
 
@@ -17,6 +16,6 @@ $ro = \Views\Site::content();
 
 $Pesto->render($ro);
 */
-$p = new Pesto2(__DIR__ . "/Classes/");
-$r = $p->render('Site');
+$p = new Pesto(__DIR__ . "/Classes/");
+$r = $p->render('1');
 print_r($r);

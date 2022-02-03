@@ -3,27 +3,37 @@
 namespace MasterPuffin\Pesto;
 
 class Pesto {
-	private string $classRoot = "";
-	private string $viewsFolder = "";
-	private string $componentsFolder = "";
+	private string $viewsDir;
+	private string $componentsDir;
+	private string $classRoot;
 
-	public function __construct(string $classRoot = "", $viewsFolder = "Views", $componentsFolder = "Components") {
+	public function __construct(string $classRoot, string $viewsDir = "Views", $componentsDir = "Components") {
 		$this->classRoot = $classRoot;
-		$this->viewsFolder = $viewsFolder;
-		$this->componentsFolder = $componentsFolder;
+		$this->viewsDir = $classRoot . $viewsDir;
+		$this->componentsDir = $classRoot . $componentsDir;
 	}
 
-	private function parse(RenderObject $ro) {
-		$parsedContent = $ro->rawContent;
+	public function render(string $templateName): string {
+		$templateCode = file_get_contents($this->viewsDir . "/" . $templateName . '.pesto.php');
+		return self::parse($templateCode);
+	}
 
-		//Parse the components
-		foreach ($ro->components as $component) {
-			//Find the component occurrences
-			preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $parsedContent, $componentOccurrences);
+	private function parse(string $templateCode): string {
+		$components = self::findPestoFeature('Components', $templateCode);
+		$templateCode = self::parseComponents($templateCode, $components);
+
+		return self::parseExtends($templateCode);
+	}
+
+	private function parseComponents(string $template, array $components): string {
+		foreach ($components as $component) {
+			//Find occurrences of the component
+			preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $template, $componentOccurrences);
+
+			//Get the code for the component
+			$componentContent = file_get_contents($this->componentsDir . "/" . $component . '.pesto.php');
 
 			foreach ($componentOccurrences[0] as $co) {
-				//Get the code for the component
-				$componentContent = ($this->classRoot . '\\' . $this->componentsFolder . '\\' . $component)::component();
 
 				//Find component attributes
 				preg_match_all('/@(.*)="(.*)"/mU', $co, $attributes);
@@ -43,48 +53,60 @@ class Pesto {
 				}
 
 				//Replace component in original RenderObject
-				$parsedContent = preg_replace('/<' . $component . '.*>(.*)<\/' . $component . '>/', $parsedComponent, $parsedContent);
+				// [^\S\r\n]* at the start removes the indentation
+				$template = preg_replace('/[^\S\r\n]*<' . $component . '.*>(.*)<\/' . $component . '>/', $parsedComponent, $template);
 			}
 		}
+		return $template;
 
-
-		//Render extensions
-		foreach ($ro->extends as $extend) {
-			//Get the extension
-			$extendRo = ($this->classRoot . '\\' . $this->viewsFolder . '\\' . $extend)::{$ro->function}();
-			$parsedExtendRo = self::parse($extendRo);
-
-			preg_match_all('/{{\s*(.*)\s*}}/mU', $parsedExtendRo, $matches, 1);
-
-			//Always render content first
-			if (in_array("content", $matches[1])) {
-				$parsedContent = preg_replace('/{{\s*content\s*}}/mU', $parsedContent, $parsedExtendRo, 1);
-			}
-
-			foreach ($matches[1] as $match) {
-				//Content has already been rendered
-				if ($match != "content") {
-					$matchedElement = ('\\' . $ro->class)::{trim($match)}();
-					$parsedMatchedElement = self::parse($matchedElement);
-
-					$parsedContent = preg_replace('/{{\s*' . $match . '\s*}}/mU', $parsedMatchedElement, $parsedContent, 1);
-				}
-			}
-		}
-
-		return $parsedContent;
 	}
 
-	public function render($ro) {
-		switch (get_class($ro)) {
-			case __NAMESPACE__ . "\RenderObject":
-				echo self::parse($ro);
-				break;
-			default:
-			case __NAMESPACE__ . "\ScriptObject":
-				//Do nothing as code has been executed
-				break;
-		}
+	private function parseExtends(string $templateCode): string {
+		//Find extends
+		$extends = self::findPestoFeature('Extends', $templateCode);
+		if (!empty($extends)) {
+			//Only use the first extend as templates can only extend once
+			$extension = $extends[0];
 
+			$extendedTemplateCode = file_get_contents($this->viewsDir . "/" . $extension . '.pesto.php');
+
+			//Find and replace each block
+			$blocks = self::findPestoBlocks($templateCode);
+
+			foreach ($blocks as $blockName => $blockContent) {
+				$extendedTemplateCode = preg_replace('/#Block\([\s|"]*' . $blockName . '[\s|"]*\).*#Endblock/sU', $blockContent, $extendedTemplateCode);
+			}
+			//Parse eventual higher extends. If there are no extends the next call will just return the code
+			$templateCode = self::parse($extendedTemplateCode);
+		}
+		return $templateCode;
 	}
+
+	//Extracts a pesto feature (extends etc.) from the template string
+	private static function findPestoFeature(string $feature, string $template): array {
+		preg_match_all('/#' . $feature . '\s?=\s?(\[[a-zA-Z0-9",\s]*\])/', $template, $featureResolved);
+		if (empty($featureResolved[0])) {
+			return [];
+		} else {
+			return self::pestoArrToPhpArr($featureResolved[0][0]);
+		}
+	}
+
+	//Finds and returns an array with each pesto block
+	private static function findPestoBlocks(string $template): array {
+		preg_match_all('/#Block\(([a-zA-Z0-9\s,"]+)\)(.+)#Endblock/sU', $template, $rawBlocks, PREG_SET_ORDER);
+		$blocks = [];
+		//Map each block content to an array where the array key is the name of the block
+		foreach ($rawBlocks as $rawBlock) {
+			$blocks[$rawBlock[1]] = trim($rawBlock[2]);
+		}
+		return $blocks;
+	}
+
+	//Converts a pesto style array "[Alert,Element]" to a php array
+	private static function pestoArrToPhpArr(string $elements): array {
+		preg_match_all('/(?=[\[|,]([a-zA-Z0-9\s,"]+)[\]|,])/U', $elements, $result);
+		return $result[1];
+	}
+
 }
