@@ -5,17 +5,28 @@ namespace MasterPuffin\Pesto;
 class Pesto {
 	private string $viewsDir;
 	private string $componentsDir;
-	private string $classRoot;
 
 	public function __construct(string $classRoot, string $viewsDir = "Views", $componentsDir = "Components") {
-		$this->classRoot = $classRoot;
 		$this->viewsDir = $classRoot . $viewsDir;
 		$this->componentsDir = $classRoot . $componentsDir;
 	}
 
 	public function render(string $templateName): string {
 		$templateCode = file_get_contents($this->viewsDir . "/" . $templateName . '.pesto.php');
-		return self::parse($templateCode);
+		$parsedTemplate = self::parse($templateCode);
+		$parsedTemplate = trim($parsedTemplate);
+
+		//Add php codes so that the template can get processed
+		$parsedTemplate = "?>" . $parsedTemplate . '<?php';
+
+		//Eval the code to the output buffer
+		ob_start();
+		eval($parsedTemplate);
+		$renderedTemplate = ob_get_contents();
+		ob_end_clean();
+
+		//Return the output buffer
+		return $renderedTemplate;
 	}
 
 	private function parse(string $templateCode): string {
