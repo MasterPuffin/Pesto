@@ -22,18 +22,8 @@ class Pesto2 {
 		$components = self::findPestoFeature('Components', $templateCode);
 		$templateCode = self::parseComponents($templateCode, $components);
 
-		$extends = self::findPestoFeature('Extends', $templateCode);
-
-		//Check if template extends and if yes render the extend
-		if (!empty($extends)) {
-			$blocks = self::findPestoBlocks($templateCode);
-
-			return self::parseExtends($blocks, $extends);
-		} else {
-			return $templateCode;
-		}
+		return self::parseExtends($templateCode);
 	}
-
 
 	private function parseComponents(string $template, array $components): string {
 		foreach ($components as $component) {
@@ -71,19 +61,25 @@ class Pesto2 {
 
 	}
 
-	private function parseExtends(array $blocks, array $extensions): string {
-		foreach ($extensions as $extension) {
-			//Get extension file
-			$extensionTemplateCode = file_get_contents($this->viewsDir . "/" . $extension . '.pesto.php');
-			$extensionTemplateCode = self::parse($extensionTemplateCode);
+	private function parseExtends(string $templateCode): string {
+		//Find extends
+		$extends = self::findPestoFeature('Extends', $templateCode);
+		if (!empty($extends)) {
+			//Only use the first extend as templates can only extend once
+			$extension = $extends[0];
 
-			//Replace each block in extension template code
+			$extendedTemplateCode = file_get_contents($this->viewsDir . "/" . $extension . '.pesto.php');
+
+			//Find and replace each block
+			$blocks = self::findPestoBlocks($templateCode);
+
 			foreach ($blocks as $blockName => $blockContent) {
-				$extensionTemplateCode = preg_replace('/#Block\([\s|"]*' . $blockName . '[\s|"]*\).*#Endblock/sU', $blockContent, $extensionTemplateCode);
+				$extendedTemplateCode = preg_replace('/#Block\([\s|"]*' . $blockName . '[\s|"]*\).*#Endblock/sU', $blockContent, $extendedTemplateCode);
 			}
-
+			//Parse eventual higher extends. If there are no extends the next call will just return the code
+			$templateCode = self::parse($extendedTemplateCode);
 		}
-		return $extensionTemplateCode;
+		return $templateCode;
 	}
 
 	//Extracts a pesto feature (extends etc.) from the template string
