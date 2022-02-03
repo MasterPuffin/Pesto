@@ -6,6 +6,7 @@ class Pesto {
 	private string $viewsDir;
 	private string $componentsDir;
 	private string $cacheDir;
+	public bool $enableCaching = true;
 
 	public function __construct(string $root, string $viewsDir = "Views", $componentsDir = "Components", $cacheDir = "Cache") {
 		$this->viewsDir = $root . $viewsDir;
@@ -15,7 +16,7 @@ class Pesto {
 
 	public function render(string $templateName): string {
 		//Check if file is cached
-		if (file_exists($this->cacheDir . "/" . $templateName)) {
+		if ($this->enableCaching && file_exists($this->cacheDir . "/" . $templateName)) {
 			//Load file from cache
 			$parsedTemplate = file_get_contents($this->cacheDir . "/" . $templateName);
 		} else {
@@ -25,13 +26,15 @@ class Pesto {
 			$parsedTemplate = trim($parsedTemplate);
 
 			//Render and escape variables
-			$parsedTemplate = preg_replace('/{{\s*(\$[a-zA-Z0-9-_]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
+			$parsedTemplate = preg_replace('/{{\s*(\$[a-zA-Z0-9-_>\$\[\]]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
 
 			//Add php codes so that the template can get processed
 			$parsedTemplate = "?>" . $parsedTemplate . '<?php';
 
-			//Save parsed cache to file
-			file_put_contents($this->cacheDir . "/" . $templateName, $parsedTemplate);
+			if ($this->enableCaching) {
+				//Save parsed cache to file
+				file_put_contents($this->cacheDir . "/" . $templateName, $parsedTemplate);
+			}
 		}
 
 		//Eval the code to the output buffer
