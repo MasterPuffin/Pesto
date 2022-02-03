@@ -15,29 +15,20 @@ class Pesto2 {
 
 	public function render(string $template) {
 		$templateCode = file_get_contents($this->viewsDir . "/" . $template . '.pesto.php');
-		//print_r($templateCode);
-		echo "\n";
 
 		$components = self::findPestoFeature('Components', $templateCode);
+		$templateCode = self::parseComponents($templateCode, $components);
+
 		$extends = self::findPestoFeature('Extends', $templateCode);
 
-		//print_r($components);
-		//print_r($extends);
 		$blocks = self::findPestoBlocks($templateCode);
-		$parsedBlocks = [];
-		//print_r($blocks);
-		foreach ($blocks as $blockName => $block) {
-			$parsedBlocks[$blockName] = self::parseComponents($block, $components);
-		}
-
-		print_r($parsedBlocks);
-
+		$parsedContent = self::parseExtends($blocks, $extends);
+		print_r($parsedContent);
 	}
 
 
 	private function parseComponents(string $template, array $components): string {
 		foreach ($components as $component) {
-
 			//Find occurrences of the component
 			preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $template, $componentOccurrences);
 
@@ -62,7 +53,6 @@ class Pesto2 {
 				for ($i = 0; $i < count($attributes); $i++) {
 					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', $attributes[2][$i], $parsedComponent);
 				}
-				print_r($co);
 
 				//Replace component in original RenderObject
 				// [^\S\r\n]* at the start removes the indentation
@@ -71,6 +61,20 @@ class Pesto2 {
 		}
 		return $template;
 
+	}
+
+	private function parseExtends(array $blocks, array $extensions):string {
+		foreach ($extensions as $extension) {
+			//Get extension file
+			$extensionTemplateCode = file_get_contents($this->viewsDir . "/" . $extension . '.pesto.php');
+
+			//Replace each block in extension template code
+			foreach ($blocks as $blockName => $blockContent) {
+				$extensionTemplateCode = preg_replace('/#Block\([\s|"]*' . $blockName . '[\s|"]*\).*#Endblock/sU', $blockContent, $extensionTemplateCode);
+			}
+
+		}
+		return $extensionTemplateCode;
 	}
 
 	//Extracts a pesto feature (extends etc.) from the template string
