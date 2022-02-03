@@ -5,22 +5,34 @@ namespace MasterPuffin\Pesto;
 class Pesto {
 	private string $viewsDir;
 	private string $componentsDir;
+	private string $cacheDir;
 
-	public function __construct(string $classRoot, string $viewsDir = "Views", $componentsDir = "Components") {
-		$this->viewsDir = $classRoot . $viewsDir;
-		$this->componentsDir = $classRoot . $componentsDir;
+	public function __construct(string $root, string $viewsDir = "Views", $componentsDir = "Components", $cacheDir = "Cache") {
+		$this->viewsDir = $root . $viewsDir;
+		$this->componentsDir = $root . $componentsDir;
+		$this->cacheDir = $root . $cacheDir;
 	}
 
 	public function render(string $templateName): string {
-		$templateCode = file_get_contents($this->viewsDir . "/" . $templateName . '.pesto.php');
-		$parsedTemplate = self::parse($templateCode);
-		$parsedTemplate = trim($parsedTemplate);
+		//Check if file is cached
+		if (file_exists($this->cacheDir . "/" . $templateName)) {
+			//Load file from cache
+			$parsedTemplate = file_get_contents($this->cacheDir . "/" . $templateName);
+		} else {
+			//Parse file
+			$templateCode = file_get_contents($this->viewsDir . "/" . $templateName . '.pesto.php');
+			$parsedTemplate = self::parse($templateCode);
+			$parsedTemplate = trim($parsedTemplate);
 
-		//Render and escape variables
-		$parsedTemplate = preg_replace('/{{\s*(\$[a-zA-Z0-9-_]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
+			//Render and escape variables
+			$parsedTemplate = preg_replace('/{{\s*(\$[a-zA-Z0-9-_]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
 
-		//Add php codes so that the template can get processed
-		$parsedTemplate = "?>" . $parsedTemplate . '<?php';
+			//Add php codes so that the template can get processed
+			$parsedTemplate = "?>" . $parsedTemplate . '<?php';
+
+			//Save parsed cache to file
+			file_put_contents($this->cacheDir . "/" . $templateName, $parsedTemplate);
+		}
 
 		//Eval the code to the output buffer
 		ob_start();
