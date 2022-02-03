@@ -1,7 +1,5 @@
 <?php
 
-namespace MasterPuffin\Pesto;
-
 class Pesto {
 	private string $viewsDir;
 	private string $componentsDir;
