@@ -18,4 +18,5 @@ $ro = \Views\Site::content();
 $Pesto->render($ro);
 */
 $p = new Pesto2(__DIR__ . "/Classes/");
-$p->render('Site');
+$r = $p->render('Site');
+print_r($r);

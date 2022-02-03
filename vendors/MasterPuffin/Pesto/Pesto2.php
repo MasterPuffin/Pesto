@@ -13,17 +13,25 @@ class Pesto2 {
 		$this->componentsDir = $classRoot . $componentsDir;
 	}
 
-	public function render(string $template) {
-		$templateCode = file_get_contents($this->viewsDir . "/" . $template . '.pesto.php');
+	public function render(string $templateName): string {
+		$templateCode = file_get_contents($this->viewsDir . "/" . $templateName . '.pesto.php');
+		return self::parse($templateCode);
+	}
 
+	private function parse(string $templateCode): string {
 		$components = self::findPestoFeature('Components', $templateCode);
 		$templateCode = self::parseComponents($templateCode, $components);
 
 		$extends = self::findPestoFeature('Extends', $templateCode);
 
-		$blocks = self::findPestoBlocks($templateCode);
-		$parsedContent = self::parseExtends($blocks, $extends);
-		print_r($parsedContent);
+		//Check if template extends and if yes render the extend
+		if (!empty($extends)) {
+			$blocks = self::findPestoBlocks($templateCode);
+
+			return self::parseExtends($blocks, $extends);
+		} else {
+			return $templateCode;
+		}
 	}
 
 
@@ -63,10 +71,11 @@ class Pesto2 {
 
 	}
 
-	private function parseExtends(array $blocks, array $extensions):string {
+	private function parseExtends(array $blocks, array $extensions): string {
 		foreach ($extensions as $extension) {
 			//Get extension file
 			$extensionTemplateCode = file_get_contents($this->viewsDir . "/" . $extension . '.pesto.php');
+			$extensionTemplateCode = self::parse($extensionTemplateCode);
 
 			//Replace each block in extension template code
 			foreach ($blocks as $blockName => $blockContent) {
@@ -80,7 +89,11 @@ class Pesto2 {
 	//Extracts a pesto feature (extends etc.) from the template string
 	private static function findPestoFeature(string $feature, string $template): array {
 		preg_match_all('/#' . $feature . '\s?=\s?(\[[a-zA-Z0-9",\s]*\])/', $template, $featureResolved);
-		return self::pestoArrToPhpArr($featureResolved[0][0]);
+		if (empty($featureResolved[0])) {
+			return [];
+		} else {
+			return self::pestoArrToPhpArr($featureResolved[0][0]);
+		}
 	}
 
 	//Finds and returns an array with each pesto block
