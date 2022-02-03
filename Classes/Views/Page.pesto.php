@@ -4,9 +4,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>#Block(title)#Endblock</title>
+    <title>#Block(blocknametitle)#Endblock</title>
 </head>
 <body>
-#Block(content)#Endblock
+#Block(blocknamecontent)#Endblock
 </body>
 </html>

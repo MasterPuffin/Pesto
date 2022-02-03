@@ -1,13 +1,13 @@
 <?php
 ?>
-#Components = [Alert,Element,Element2]
+#Components = [Alert]
 #Extends = [Page]
 
-#Block(title)
+#Block(blocknametitle)
 This is a title
 #Endblock
 
-#Block(content)
+#Block(blocknamecontent)
 <div>
 	<p>Dies ist ein Text</p>
 	<div>
