@@ -16,6 +16,9 @@ class Pesto {
 		$parsedTemplate = self::parse($templateCode);
 		$parsedTemplate = trim($parsedTemplate);
 
+		//Render and escape variables
+		$parsedTemplate = preg_replace('/{{\s*(\$[a-zA-Z0-9-_]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
+
 		//Add php codes so that the template can get processed
 		$parsedTemplate = "?>" . $parsedTemplate . '<?php';
 
