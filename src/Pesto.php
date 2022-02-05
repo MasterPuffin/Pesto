@@ -5,6 +5,7 @@ class Pesto {
 	private string $componentsDir;
 	private string $cacheDir;
 	public bool $enableCaching = true;
+	public bool $writeResultToCache = false;
 
 	public function __construct(string $root, string $viewsDir = "Views", $componentsDir = "Components", $cacheDir = "Cache") {
 		$this->viewsDir = $root . $viewsDir;
@@ -23,7 +24,7 @@ class Pesto {
 			$parsedTemplate = self::parse($templateCode);
 
 			//Render and escape variables
-			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_>\$\[\]]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
+			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_>\$\[\]"]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
 
 			//Remove leftover pesto tags
 			$parsedTemplate = preg_replace('/#.*]/m', '', $parsedTemplate);
@@ -33,7 +34,7 @@ class Pesto {
 			//Add php codes so that the template can get processed
 			$parsedTemplate = "?>" . $parsedTemplate . '<?php';
 
-			if ($this->enableCaching) {
+			if ($this->enableCaching || $this->writeResultToCache) {
 				//Save parsed cache to file
 				file_put_contents($this->cacheDir . "/" . $templateName, $parsedTemplate);
 			}
