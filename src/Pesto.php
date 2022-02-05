@@ -80,9 +80,13 @@ class Pesto {
 				$parsedComponent = $componentContent;
 
 				//Replace each attribute with its content
-				for ($i = 0; $i < count($attributes); $i++) {
+				for ($i = 0; $i < count($attributes[1]); $i++) {
+					//TODO: This won't escape input, however the lower one doesn't allow to pass variables
 					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', $attributes[2][$i], $parsedComponent);
-				}
+					/*
+					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', '<?php echo htmlspecialchars("' . $attributes[2][$i] . '") ?>', $parsedComponent);
+					*/
+					}
 
 				//Replace component in original RenderObject
 				// [^\S\r\n]* at the start removes the indentation

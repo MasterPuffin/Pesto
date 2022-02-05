@@ -16,6 +16,8 @@ Defines in which parent block the content inside this block should be rendered
 `#Block(<blockname>)#Endblock`  
 Defines where the content from the child block should go
 
+PHP variables declared inside a block can only be accesses inside this block. PHP variables declared outside a block can be accessed everywhere. 
+
 `{{ <PHPVariable> }}`  
 Echoes a PHP variable. Objects and arrays are supported. Variables are autoescaped.
 
