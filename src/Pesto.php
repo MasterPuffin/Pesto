@@ -97,6 +97,7 @@ class Pesto {
 		//Find extends
 		$extends = self::findPestoFeature('Extends', $templateCode);
 		if (!empty($extends)) {
+			$templateGlobalPHP = self::getTemplateGlobalPHP($templateCode);
 			//Only use the first extend as templates can only extend once
 			$extension = $extends[0];
 
@@ -108,6 +109,10 @@ class Pesto {
 			foreach ($blocks as $blockName => $blockContent) {
 				$extendedTemplateCode = preg_replace('/#Block\([\s|"]*' . $blockName . '[\s|"]*\).*#Endblock/sU', $blockContent, $extendedTemplateCode);
 			}
+
+			//Add the templates global PHP code back
+			$extendedTemplateCode = implode("\n", $templateGlobalPHP) . "\n" . $extendedTemplateCode;
+
 			//Parse eventual higher extends. If there are no extends the next call will just return the code
 			$templateCode = self::parse($extendedTemplateCode);
 		}
@@ -133,6 +138,13 @@ class Pesto {
 			$blocks[$rawBlock[1]] = trim($rawBlock[2]);
 		}
 		return $blocks;
+	}
+
+	//Finds the code that is not inside a block
+	private static function getTemplateGlobalPHP($template): array {
+		$rawCode = preg_replace('/#Block\(([a-zA-Z0-9\s,"]+)\)(.+)#Endblock/sU', '', $template);
+		preg_match_all('/(<\?php|<\?|<\?=).*\?>/sU', $rawCode, $code);
+		return $code[0];
 	}
 
 	//Converts a pesto style array "[Alert,Element]" to a php array
