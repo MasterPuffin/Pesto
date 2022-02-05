@@ -23,7 +23,7 @@ class Pesto {
 			$parsedTemplate = self::parse($templateCode);
 
 			//Render and escape variables
-			$parsedTemplate = preg_replace('/{{\s*(\$[a-zA-Z0-9-_>\$\[\]]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
+			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_>\$\[\]]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
 
 			//Remove leftover pesto tags
 			$parsedTemplate = preg_replace('/#.*]/m', '', $parsedTemplate);
