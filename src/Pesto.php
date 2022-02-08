@@ -78,25 +78,52 @@ class Pesto {
 				//Push the content to the attributes, so we only have to loop trough one array
 				$attributes[1][] = "content";
 				$attributes[2][] = $contents[1][0];
+				print_r($attributes);
+
+				//Make a new array where the attribute names are the keys and the attribute contents are the values
+				$sortedAttributes = [];
+				for ($i = 0; $i < count($attributes[1]); $i++) {
+					$sortedAttributes[$attributes[1][$i]] = $attributes[2][$i];
+				}
+
+				print_r($sortedAttributes);
+
 
 				$parsedComponent = $componentContent;
 
+				//Find all attributes used in this component
+				preg_match_all('/{{\s?@([a-zA-Z0-9-_]*)\s?}}/mU', $parsedComponent, $attributOccurrences);
+				print_r($attributOccurrences);
+
+				foreach ($attributOccurrences[1] as $occurrence) {
+					//Replace in {{ }} tags
+					$parsedComponent = preg_replace('/{{\s?@' . $occurrence . '\s?}}/mU', $sortedAttributes[$occurrence], $parsedComponent);
+
+					//Replace in functions
+					//TODO
+				}
+
+				/*
 				//Replace each attribute with its content
 				for ($i = 0; $i < count($attributes[1]); $i++) {
 					//TODO: This won't escape input, however the lower one doesn't allow to pass variables
 					//Replace Attribute in variables
 					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', $attributes[2][$i], $parsedComponent);
-
+					echo "prefix\n";
+					print_r($attributes[1][$i]);
+					print_r($parsedComponent);
 					//Replace Attribute in functions
-					$parsedComponent = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(' . $attributes[1][$i] . '\)\s*}}/', "{{ $1(\"" . $attributes[2][$i] . "\") }}", $parsedComponent);
-
+					$parsedComponent = preg_replace('/({{\s*[a-zA-Z0-9-_]*\(.*)(' . $attributes[1][$i] . ')(.*\)\s*}})/U', "$1" . $attributes[2][$i] . "$3", $parsedComponent);
+					echo "postfix\n";
+					print_r($parsedComponent);
 					//Remove PHP Tags inside functions
+
 					$parsedComponent = preg_replace('/{{\s?([a-zA-Z0-9-_]*)\(.*<\?=(.*)\?>.*\s?}}/mU', '{{ $1($2) }}', $parsedComponent);
 
-					/*
 					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', '<?php echo htmlspecialchars("' . $attributes[2][$i] . '") ?>', $parsedComponent);
-					*/
+
 				}
+				*/
 
 				//Replace component in original RenderObject
 				// [^\S\r\n]* at the start removes the indentation
