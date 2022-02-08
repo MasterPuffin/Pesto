@@ -27,7 +27,7 @@ class Pesto {
 			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_>\$\[\]"]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
 
 			//Render and escape functions
-			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(([a-zA-Z0-9-_">\$\[\]]*)\)\s*}}/m', '<?php $1("htmlspecialchars($2)") ?>', $parsedTemplate);
+			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(\s*([a-zA-Z0-9-_">\$\[\]]*)\s*\)\s*}}/m', '<?php $1(htmlspecialchars($2)) ?>', $parsedTemplate);
 
 			//Remove leftover pesto tags
 			$parsedTemplate = preg_replace('/#.*]/m', '', $parsedTemplate);
@@ -69,7 +69,6 @@ class Pesto {
 			$componentContent = file_get_contents($this->componentsDir . "/" . $component . '.pesto.php');
 
 			foreach ($componentOccurrences[0] as $co) {
-
 				//Find component attributes
 				preg_match_all('/@(.*)="(.*)"/mU', $co, $attributes);
 
@@ -87,8 +86,12 @@ class Pesto {
 					//TODO: This won't escape input, however the lower one doesn't allow to pass variables
 					//Replace Attribute in variables
 					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', $attributes[2][$i], $parsedComponent);
+
 					//Replace Attribute in functions
-					$parsedComponent = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(' . $attributes[1][$i] . '\)\s*}}/', "<?php $1(\"" . $attributes[2][$i] . "\") ?>", $parsedComponent);
+					$parsedComponent = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(' . $attributes[1][$i] . '\)\s*}}/', "{{ $1(\"" . $attributes[2][$i] . "\") }}", $parsedComponent);
+
+					//Remove PHP Tags inside functions
+					$parsedComponent = preg_replace('/{{\s?([a-zA-Z0-9-_]*)\(.*<\?=(.*)\?>.*\s?}}/mU', '{{ $1($2) }}', $parsedComponent);
 
 					/*
 					$parsedComponent = preg_replace('/{{\s*' . $attributes[1][$i] . '\s*}}/', '<?php echo htmlspecialchars("' . $attributes[2][$i] . '") ?>', $parsedComponent);
