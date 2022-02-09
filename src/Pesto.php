@@ -78,7 +78,6 @@ class Pesto {
 				//Push the content to the attributes, so we only have to loop trough one array
 				$attributes[1][] = "content";
 				$attributes[2][] = $contents[1][0];
-				print_r($attributes);
 
 				//Make a new array where the attribute names are the keys and the attribute contents are the values
 				$sortedAttributes = [];
@@ -86,20 +85,28 @@ class Pesto {
 					$sortedAttributes[$attributes[1][$i]] = $attributes[2][$i];
 				}
 
-				print_r($sortedAttributes);
-
-
 				$parsedComponent = $componentContent;
 
 				//Find all attributes used in this component
-				preg_match_all('/{{\s?@([a-zA-Z0-9-_]*)\s?}}/mU', $parsedComponent, $attributOccurrences);
-				print_r($attributOccurrences);
+				//The Regex pattern has been provided from Casimir et Hippolyte at Stackoverflow unter CC BY-SA 4.0 (https://stackoverflow.com/a/71038459/4774591)
+				preg_match_all('/@[a-zA-Z0-9-_]+ (?= [^{}]* (?: {(?!{) [^{}]* | }(?!}) [^{}]* )* }} )/x', $parsedComponent, $attributOccurrences);
+				//Remove double entries in array
+				$attributOccurrences = array_unique($attributOccurrences[0]);
 
-				foreach ($attributOccurrences[1] as $occurrence) {
+				//Remove @ from beginning of value
+				$attributOccurrences = array_map(function($entry) { return str_replace('@','',$entry); }, $attributOccurrences);
+
+				foreach ($attributOccurrences as $occurrence) {
 					//Replace in {{ }} tags
 					$parsedComponent = preg_replace('/{{\s?@' . $occurrence . '\s?}}/mU', $sortedAttributes[$occurrence], $parsedComponent);
 
 					//Replace in functions
+					//The function has been provided from Casimir et Hippolyte at Stackoverflow unter CC BY-SA 4.0 (https://stackoverflow.com/a/71038459/4774591)
+					$parsedComponent = preg_replace_callback(
+						'~{{.*?}}~s',
+						fn($m) => str_replace('@' . $occurrence, $sortedAttributes[$occurrence], $m[0]),
+						$parsedComponent
+					);
 					//TODO
 				}
 
