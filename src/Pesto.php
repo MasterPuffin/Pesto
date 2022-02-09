@@ -109,6 +109,13 @@ class Pesto {
 						fn($m) => str_replace('@' . $occurrence, $sortedAttributes[$occurrence], $m[0]),
 						$parsedComponent
 					);
+
+					//Remove PHP Tags inside functions
+					$parsedComponent = preg_replace_callback(
+						'~{{.*?}}~s',
+						fn($m) => str_replace(['<?=','<?php','<?','?>'], '', $m[0]),
+						$parsedComponent
+					);
 				}
 
 				//Replace component in original RenderObject
