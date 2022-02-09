@@ -27,7 +27,7 @@ class Pesto {
 			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_>\$\[\]"]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
 
 			//Render and escape functions
-			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(\s*([a-zA-Z0-9-_">\$\[\],\s]*)\s*\)\s*}}/m', '<?php echo htmlspecialchars($1($2)) ?>', $parsedTemplate);
+			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(\s*(.*)s*\)\s*}}/mU', '<?php echo htmlspecialchars($1($2)) ?>', $parsedTemplate);
 
 			//Remove leftover pesto tags
 			$parsedTemplate = preg_replace('/#.*]/m', '', $parsedTemplate);
