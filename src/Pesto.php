@@ -27,7 +27,7 @@ class Pesto {
 			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_>\$\[\]"]*)\s*}}/m', '<?php echo htmlspecialchars($1) ?>', $parsedTemplate);
 
 			//Render and escape functions
-			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(\s*([a-zA-Z0-9-_">\$\[\]]*)\s*\)\s*}}/m', '<?php $1(htmlspecialchars($2)) ?>', $parsedTemplate);
+			$parsedTemplate = preg_replace('/{{\s*([a-zA-Z0-9-_]*)\(\s*([a-zA-Z0-9-_">\$\[\],\s]*)\s*\)\s*}}/m', '<?php echo htmlspecialchars($1($2)) ?>', $parsedTemplate);
 
 			//Remove leftover pesto tags
 			$parsedTemplate = preg_replace('/#.*]/m', '', $parsedTemplate);
@@ -94,7 +94,9 @@ class Pesto {
 				$attributOccurrences = array_unique($attributOccurrences[0]);
 
 				//Remove @ from beginning of value
-				$attributOccurrences = array_map(function($entry) { return str_replace('@','',$entry); }, $attributOccurrences);
+				$attributOccurrences = array_map(function ($entry) {
+					return str_replace('@', '', $entry);
+				}, $attributOccurrences);
 
 				foreach ($attributOccurrences as $occurrence) {
 					//Replace in {{ }} tags
