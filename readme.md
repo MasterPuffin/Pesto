@@ -80,11 +80,14 @@ This is a title
 
 ## Example for a component
 `Alert.pesto.php`
+
+Be sure to wrap strings in quotes
 ```html
 <div class="alert">
     <h1>{{ @title }}</h1>
     <p>{{ @attribute }}</p>
     <p>{{ @content }}</p>
+    <p>{{ function( "@string", @variableOrInt }}</p>
 <div>
 
 ```
