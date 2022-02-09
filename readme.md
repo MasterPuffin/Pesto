@@ -10,6 +10,9 @@ Defines the components that are available in the current template
 `#Extends = [<TemplateName>]`  
 Defines another template which the templates expands into. Only one entry is possible
 
+`@Varible`  
+Declares a variable in a custom component und renders the variable in the component itself
+
 `#Block(<blockname>) <content> #Endblock`  
 Defines in which parent block the content inside this block should be rendered
 
@@ -79,9 +82,9 @@ This is a title
 `Alert.pesto.php`
 ```html
 <div class="alert">
-    <h1>{{ title }}</h1>
-    <p>{{ attribute }}</p>
-    <p>{{ content }}</p>
+    <h1>{{ @title }}</h1>
+    <p>{{ @attribute }}</p>
+    <p>{{ @content }}</p>
 <div>
 
 ```
