@@ -63,17 +63,18 @@ class Pesto {
 	private function parseComponents(string $template, array $components): string {
 		foreach ($components as $component) {
 			//Find occurrences of the component
-			preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $template, $componentOccurrences);
+			preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/ms', $template, $componentOccurrences);
 
 			//Get the code for the component
 			$componentContent = file_get_contents($this->componentsDir . "/" . $component . '.pesto.php');
 
 			foreach ($componentOccurrences[0] as $co) {
+
 				//Find component attributes
 				preg_match_all('/@(.*)="(.*)"/mU', $co, $attributes);
 
 				//Find body
-				preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/m', $co, $contents);
+				preg_match_all('/<' . $component . '.*>(.*)<\/' . $component . '>/ms', $co, $contents);
 
 				//Push the content to the attributes, so we only have to loop trough one array
 				$attributes[1][] = "content";
@@ -120,7 +121,7 @@ class Pesto {
 
 				//Replace component in original RenderObject
 				// [^\S\r\n]* at the start removes the indentation
-				$template = preg_replace('/[^\S\r\n]*<' . $component . '.*>(.*)<\/' . $component . '>/', $parsedComponent, $template);
+				$template = preg_replace('/[^\S\r\n]*<' . $component . '.*>(.*)<\/' . $component . '>/ms', $parsedComponent, $template);
 			}
 		}
 		return $template;
